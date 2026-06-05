@@ -1,0 +1,315 @@
+.reportes-page-wrapper {
+  padding-top: 64px; /* Space for navbar */
+  min-height: 100vh;
+  background: #f1f5f9;
+  font-family: 'Inter', sans-serif;
+  color: #1e293b;
+  box-sizing: border-box;
+}
+
+.contenedor-principal {
+  padding: 3rem 1.5rem;
+  max-width: 98%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.reports-card {
+  width: 100%;
+  max-width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3.5rem !important;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.titulo-principal {
+  background: linear-gradient(to right, #273469 0%, #4A90E2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+  font-size: 3.2rem;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 3.5rem;
+  width: 100%;
+}
+
+.filtros-seccion {
+  width: 100%;
+  margin-bottom: 3.5rem;
+}
+
+.reportes-page-wrapper .form-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+}
+
+.input-group label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #273469;
+  width: 100%;
+}
+
+.input-premium {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+.input-premium:focus {
+  border-color: #4a90e2;
+  background: white;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+}
+
+/* Custom Dropdown Selector inside reports */
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.custom-select-trigger {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #1e293b;
+  box-sizing: border-box;
+}
+
+.custom-select-trigger.active {
+  border-color: #4a90e2;
+  background: white;
+}
+
+.custom-select-trigger.active .arrow {
+  transform: rotate(180deg);
+}
+
+.custom-select-trigger .arrow {
+  transition: transform 0.3s;
+  color: #94a3b8;
+}
+
+.custom-options {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  z-index: 100;
+  display: none;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.custom-options.active {
+  display: block;
+}
+
+.option {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #475569;
+  text-align: left;
+}
+
+.option:hover {
+  background: #f1f5f9;
+  color: #4a90e2;
+}
+
+.option.selected {
+  background: #eff6ff;
+  color: #4a90e2;
+  font-weight: 700;
+}
+
+.botones-filtros {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.btn-action-reportes {
+  min-width: 180px;
+  height: 52px;
+}
+
+/* Tablas */
+.tabla-container {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  overflow-x: auto;
+  background: #f8fafc;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+th {
+  background: #f1f5f9;
+  padding: 1.25rem;
+  text-align: center;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+  font-weight: 800;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+td {
+  padding: 1.5rem 1.25rem;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+tr {
+  transition: background 0.2s;
+}
+
+tr:hover {
+  background: #f1f5f9;
+}
+
+.nombre {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.location-cell {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.sin-registros {
+  text-align: center;
+  color: #94a3b8;
+  padding: 5rem 1rem !important;
+  font-style: italic;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Badges */
+.badge-status, .badge-puntualidad {
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  display: inline-block;
+  letter-spacing: 0.02em;
+}
+
+.badge-status.completado {
+  background: #e1fdec !important;
+  color: #065f46 !important;
+  border: 1px solid #34d399;
+}
+
+.badge-status.pendiente {
+  background: #fff9db !important;
+  color: #92400e !important;
+  border: 1px solid #fbbf24;
+}
+
+.badge-puntualidad.a-tiempo {
+  background: #ecfdf5 !important;
+  color: #059669 !important;
+  border: 1px solid #6ee7b7;
+}
+
+.badge-puntualidad.retardo {
+  background: #fffbeb !important;
+  color: #d97706 !important;
+  border: 1px solid #fcd34d;
+}
+
+.badge-puntualidad.falta {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fca5a5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .contenedor-principal { padding: 2rem 1.25rem; }
+  .reports-card { padding: 2rem !important; }
+  .titulo-principal { font-size: 2.5rem; margin-bottom: 2.5rem; }
+  .reportes-page-wrapper .form-grid { grid-template-columns: repeat(2, 1fr); }
+  .botones-filtros { flex-wrap: wrap; }
+}
+
+@media (max-width: 425px) {
+  .contenedor-principal { padding: 1rem 0.5rem; }
+  .reports-card { 
+    padding: 1.5rem !important; 
+    border-radius: 16px;
+    margin-top: -1.5rem;
+  }
+  .titulo-principal { font-size: 2rem; margin-bottom: 1.5rem; text-align: left; }
+  .reportes-page-wrapper .form-grid { grid-template-columns: 1fr; gap: 0.8rem; margin-bottom: 1.5rem; }
+  .botones-filtros { flex-direction: column; gap: 0.8rem; width: 100%; }
+  .btn-action-reportes { width: 100%; min-width: 0; }
+  .tabla-container { border-radius: 12px; }
+  td { font-size: 0.85rem; padding: 1rem 0.75rem; }
+  th { padding: 1rem 0.75rem; }
+}
+
+@media (max-width: 375px) {
+  .reports-card { padding: 1.25rem !important; margin-top: -2rem; }
+  .titulo-principal { font-size: 1.8rem; }
+}
+
+@media (max-width: 320px) {
+  .contenedor-principal { padding: 0.5rem 0.25rem; }
+  .reports-card { padding: 1rem !important; margin-top: -2.5rem; }
+  .titulo-principal { font-size: 1.6rem; margin-bottom: 1rem; }
+}

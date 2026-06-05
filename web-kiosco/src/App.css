@@ -1,0 +1,498 @@
+/* KIOSCO APP STYLES - FULLY RESPONSIVE PREMIUM DESIGN SYSTEM */
+
+.kiosco-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-app-bg);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  box-sizing: border-box;
+}
+
+.kiosco-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  padding: 86px 16px 16px 16px; /* 70px navbar + 16px content gap */
+  box-sizing: border-box;
+}
+
+/* Navbar Styles */
+.kiosco-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 70px;
+  padding: 0 24px;
+  background: var(--navbar-bg);
+  border-bottom: 1px solid var(--navbar-border);
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo {
+  max-height: 42px;
+  width: auto;
+  display: block;
+}
+
+.navbar-center {
+  font-size: var(--navbar-title-size);
+  font-weight: 700;
+  color: var(--navbar-text);
+  text-align: center;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--navbar-btn-radius);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.nav-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+.btn-dashboard {
+  color: var(--navbar-btn-db-text);
+  border-color: var(--navbar-btn-db-border);
+  background: var(--navbar-btn-db-bg);
+}
+
+.btn-dashboard:hover {
+  color: var(--navbar-btn-db-text-hover);
+  border-color: var(--navbar-btn-db-border-hover);
+  background: var(--navbar-btn-db-bg-hover);
+}
+
+.btn-salir {
+  color: var(--navbar-btn-salir-text);
+  border-color: var(--navbar-btn-salir-border);
+  background: var(--navbar-btn-salir-bg);
+}
+
+.btn-salir:hover {
+  color: var(--navbar-btn-salir-text-hover);
+  border-color: var(--navbar-btn-salir-border-hover);
+  background: var(--navbar-btn-salir-bg-hover);
+}
+
+@media (max-width: 767px) {
+  .kiosco-navbar {
+    height: 60px;
+    padding: 0 12px;
+  }
+  
+  .navbar-logo {
+    max-height: 34px;
+  }
+  
+  .navbar-center {
+    display: none;
+  }
+  
+  .navbar-right {
+    gap: 8px;
+  }
+  
+  .nav-btn {
+    padding: 8px;
+  }
+  
+  .nav-btn span {
+    display: none;
+  }
+}
+
+/* Card Header Styles */
+.kiosco-card-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+
+
+
+
+/* Main Camera Card - Light Gray almost White */
+.kiosco-card {
+  width: 100%;
+  max-width: 340px;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+/* Camera Container - Responsive aspect-ratio scaling */
+.webcam-container {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 4 / 5;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+  border: 2px solid var(--color-card-border);
+}
+
+.webcam-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Oval Overlay Cutout - Fully responsive percentage-based */
+.webcam-overlay {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.face-cutout {
+  width: 75%;
+  height: 80%;
+  border-radius: 50%;
+  border: 3px dashed var(--color-primary);
+  background: transparent;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.7);
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--transition-speed) ease, border-style var(--transition-speed) ease;
+}
+
+.face-cutout.scanning {
+  border-color: var(--color-success);
+  border-style: solid;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2), 0 0 0 9999px rgba(15, 23, 42, 0.7);
+}
+
+.face-cutout.liveness-ready {
+  border-color: var(--color-primary);
+  border-style: solid;
+  animation: pulse-border 1.5s infinite alternate;
+}
+
+@keyframes pulse-border {
+  0% { border-color: var(--color-primary); box-shadow: 0 0 10px rgba(59, 130, 246, 0.3), 0 0 0 9999px rgba(15, 23, 42, 0.7); }
+  100% { border-color: var(--color-primary-light); box-shadow: 0 0 25px rgba(96, 165, 250, 0.6), 0 0 0 9999px rgba(15, 23, 42, 0.7); }
+}
+
+/* Moving Laser Line */
+.laser-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 1) 50%, rgba(16, 185, 129, 0.1) 100%);
+  box-shadow: 0 0 15px #10b981, 0 0 5px #10b981;
+  animation: scan-move 2.5s infinite ease-in-out;
+}
+
+@keyframes scan-move {
+  0% { top: 0%; }
+  50% { top: 100%; }
+  100% { top: 0%; }
+}
+
+/* EAR Blink / Orientation Progress Bar */
+.ear-indicator-container {
+  width: 100%;
+  background: var(--color-card-border);
+  border-radius: 10px;
+  height: 6px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.ear-indicator-bar {
+  height: 100%;
+  background: #a78bfa;
+  width: 0%;
+  transition: width 0.1s ease;
+}
+
+/* Status Info box */
+.status-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 70px;
+}
+
+.status-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 4px 0;
+}
+
+.status-subtext {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(15, 23, 42, 0.1);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+  margin-bottom: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Modals */
+
+
+/* Feedback Success/Error Modal */
+.feedback-card {
+  width: 85%;
+  max-width: 320px;
+  background: var(--color-card-bg);
+  border-radius: 24px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  animation: scale-up 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid var(--color-card-border);
+}
+
+.feedback-card.success {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: #f0fdf4;
+}
+
+.feedback-card.error {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: #fef2f2;
+}
+
+@keyframes scale-up {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.feedback-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  margin-bottom: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.feedback-card.success .feedback-icon {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+}
+
+.feedback-card.error .feedback-icon {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.feedback-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  background: var(--text-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.feedback-message {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Footer brand area */
+.kiosco-footer {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 16px;
+}
+
+/* Media Query for Mobile (320px, 375px, 425px) to pull content up closer to the top */
+@media (max-width: 767px) {
+  .kiosco-layout {
+    justify-content: flex-start;
+    gap: 8px;
+    padding-top: 76px; /* 60px navbar + 16px content gap */
+  }
+  
+  .kiosco-header {
+    margin-bottom: 8px;
+  }
+
+  .kiosco-footer {
+    margin-top: auto;
+    padding-top: 12px;
+  }
+}
+
+/* Media Query for Tablets and Desktops (Scales up card, camera & header cleanly) */
+@media (min-width: 768px) {
+  .kiosco-layout {
+    padding: 94px 24px 24px 24px; /* 70px navbar + 24px content gap */
+  }
+
+  .kiosco-header {
+    max-width: 640px;
+    margin-bottom: 20px;
+  }
+
+  .kiosco-title-area h1 {
+    font-size: 28px;
+  }
+
+  .kiosco-title-area p {
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+
+
+  .kiosco-card {
+    max-width: 640px;
+    padding: 32px;
+    gap: 20px;
+    border-radius: 24px;
+  }
+
+  .webcam-container {
+    max-width: 560px;
+    border-radius: 24px;
+    aspect-ratio: 4 / 4.25;
+  }
+
+  .face-cutout {
+    width: 68%;
+    height: 82%;
+  }
+
+  .status-box {
+    min-height: 80px;
+  }
+
+  .status-text {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+
+  .status-subtext {
+    font-size: 14px;
+  }
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 12px;
+  }
+
+  .feedback-card {
+    max-width: 460px;
+    padding: 48px 36px;
+  }
+
+  .feedback-icon {
+    width: 80px;
+    height: 80px;
+    font-size: 40px;
+    margin-bottom: 24px;
+  }
+
+  .feedback-title {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .feedback-message {
+    font-size: 16px;
+  }
+
+  .kiosco-footer {
+    font-size: 12px;
+    margin-top: 20px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .navbar-center {
+    font-size: 14px;
+  }
+  
+  .nav-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    gap: 6px;
+  }
+  
+  .nav-btn svg {
+    width: 15px;
+    height: 15px;
+  }
+}

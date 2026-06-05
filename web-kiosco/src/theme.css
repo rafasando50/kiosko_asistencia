@@ -1,0 +1,160 @@
+/* ==========================================================================
+   EINSUR DESIGN SYSTEM - ESTILOS GLOBALES Y VARIABLES DE TEMA
+   Puedes editar los colores, bordes y sombras en este archivo.
+   ========================================================================== */
+
+:root {
+  /* 1. PALETA DE COLORES */
+  --color-primary: #3b82f6;          /* Color principal (ej. Azul del círculo y botones) */
+  --color-primary-hover: #2563eb;    /* Color principal al pasar el cursor (Hover) */
+  --color-primary-light: #60a5fa;    /* Tono claro para animaciones o bordes secundarios */
+  
+  --color-danger: #ef4444;           /* Color de error / Salir */
+  --color-danger-hover: #dc2626;     /* Color de error / Salir en Hover */
+  
+  --color-success: #10b981;          /* Color de éxito / Confirmación */
+  
+  /* 2. FONDOS DE LA APLICACIÓN */
+  --color-app-bg: #ffffff;           /* Fondo general de la página */
+  --color-card-bg: #f8fafc;          /* Fondo de la tarjeta (Gris casi blanco) */
+  --color-card-border: #e2e8f0;      /* Borde de la tarjeta */
+  
+  /* 3. COLORES DE TEXTO */
+  --text-main: #0f172a;              /* Texto principal (Oscuro para tema claro) */
+  --text-muted: #475569;             /* Texto secundario / leyendas (Gris oscuro) */
+  --text-light: #f8fafc;             /* Texto claro (para botones oscuros) */
+  --text-gradient: linear-gradient(90deg, #1b355a 0%, #3c7de2 100%); /* Gradiente premium para títulos */
+
+
+  /* 4. NAVBAR (Barra superior) */
+  --navbar-bg: #2b3a8e;              /* Fondo de la navbar (Azul real Einsur) */
+  --navbar-border: rgba(255, 255, 255, 0.08);
+  --navbar-text: #f8fafc;            /* Texto de bienvenida en la navbar */
+  --navbar-title-size: 18px;         /* Tamaño de letra del título de bienvenida */
+  --navbar-btn-radius: 12px;         /* Redondeo de los botones de la navbar */
+  
+  /* Botón Dashboard de la Navbar */
+  --navbar-btn-db-text: #ffffff;
+  --navbar-btn-db-border: rgba(255, 255, 255, 0.35);
+  --navbar-btn-db-bg: rgba(255, 255, 255, 0.05);
+  --navbar-btn-db-text-hover: #ffffff;
+  --navbar-btn-db-border-hover: rgba(255, 255, 255, 0.6);
+  --navbar-btn-db-bg-hover: rgba(255, 255, 255, 0.15);
+  
+  /* Botón Salir de la Navbar */
+  --navbar-btn-salir-text: #ffffff;
+  --navbar-btn-salir-border: #ef4444;
+  --navbar-btn-salir-bg: #ef4444;
+  --navbar-btn-salir-text-hover: #ffffff;
+  --navbar-btn-salir-border-hover: #dc2626;
+  --navbar-btn-salir-bg-hover: #dc2626;
+
+  /* 5. BOTONES Y SELECTORES */
+  --btn-radius: 8px;                 /* Redondeo de esquinas de botones generales */
+  --btn-primary-bg: linear-gradient(90deg, #1b355a 0%, #3c7de2 100%); /* Degradado azul del botón */
+  --btn-primary-radius: 9999px;      /* Redondeo de píldora */
+  --btn-primary-shadow: 0 4px 14px rgba(27, 53, 90, 0.25), 0 2px 4px rgba(60, 125, 226, 0.15);
+  --btn-primary-shadow-hover: 0 8px 20px rgba(27, 53, 90, 0.35), 0 3px 8px rgba(60, 125, 226, 0.2);
+  --btn-secondary-bg: #ffffff;
+  --btn-secondary-border: #cbd5e1;
+  --btn-secondary-text: #475569;
+  --btn-secondary-radius: 9999px;
+  --btn-secondary-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --input-bg: #f8fafc;               /* Fondo gris claro de inputs */
+  --input-border: #cbd5e1;           /* Borde suave de inputs */
+  --input-border-focus: #3b82f6;      /* Borde enfocado azul */
+  --input-text: #0f172a;             /* Texto dentro de los inputs */
+  --input-radius: 9999px;            /* Redondeo de píldora para inputs */
+  --input-icon-color: #94a3b8;       /* Color del icono izquierdo */
+  --input-placeholder-color: #94a3b8; /* Color del placeholder */
+
+  /* 6. EFECTOS Y SOMBRAS */
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.15); /* Sombras de las tarjetas */
+  --shadow-btn: 0 1px 2px rgba(0, 0, 0, 0.05);   /* Sombras ligeras de botones */
+  --transition-speed: 0.3s;          /* Velocidad global de animaciones/transiciones */
+}
+
+.title-main {
+  /* 1. Aplicas el degradado como fondo */
+  background: linear-gradient(90deg, #1b355a 0%, #3c7de2 100%);
+  
+  /* 2. Estableces el fondo como máscara del texto */
+  -webkit-background-clip: text;
+  background-clip: text;
+  
+  /* 3. Haces que el color del texto sea transparente para que se vea el fondo */
+  color: transparent;
+}
+
+/* ==========================================================================
+   ESTILOS PREMIUM DE BOTONES (.btn-premium)
+   ========================================================================== */
+.btn-premium {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 24px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  text-decoration: none;
+  outline: none;
+}
+
+/* Estado Primary */
+.btn-premium.primary {
+  background: var(--btn-primary-bg) !important;
+  color: var(--text-light) !important;
+  border-radius: var(--btn-primary-radius) !important;
+  box-shadow: var(--btn-primary-shadow) !important;
+  border: none !important;
+}
+
+.btn-premium.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--btn-primary-shadow-hover) !important;
+  opacity: 0.95;
+}
+
+.btn-premium.primary:active {
+  transform: translateY(1px);
+}
+
+/* Estado Outline / Secondary */
+.btn-premium.outline {
+  background: var(--btn-secondary-bg) !important;
+  color: var(--btn-secondary-text) !important;
+  border: 2px solid var(--btn-secondary-border) !important;
+  border-radius: var(--btn-secondary-radius) !important;
+  box-shadow: var(--shadow-btn) !important;
+}
+
+.btn-premium.outline:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--btn-secondary-shadow-hover) !important;
+  border-color: var(--color-primary-light) !important;
+  color: var(--color-primary-hover) !important;
+}
+
+.btn-premium.outline:active {
+  transform: translateY(1px);
+}
+
+/* Botón Danger */
+.btn-premium.danger {
+  background: var(--color-danger) !important;
+  color: var(--text-light) !important;
+  border-radius: var(--btn-primary-radius) !important;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25) !important;
+}
+
+.btn-premium.danger:hover {
+  background: var(--color-danger-hover) !important;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35) !important;
+}

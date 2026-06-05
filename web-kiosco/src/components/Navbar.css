@@ -1,0 +1,112 @@
+.navbar {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.3rem 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: auto !important;
+  z-index: 1000;
+  margin: 0 !important;
+  font-family: 'Inter', sans-serif;
+}
+
+.nav-container {
+  max-width: 100%;
+  margin: 0;
+  padding: 0 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+.navbar-logo-img {
+  height: 58px;
+  width: auto;
+  object-fit: contain;
+}
+
+.nav-welcome-text {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.1rem;
+  color: #273469;
+  font-weight: 800;
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: -0.5px;
+}
+
+.nav-welcome-text span {
+  color: #4a90e2;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-btn-link {
+  text-decoration: none;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+}
+
+.nav-btn-link:hover {
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+.dashboard-link {
+  color: #4a90e2 !important;
+  background: #f0f7ff;
+}
+
+.dashboard-link:hover {
+  background: #e0efff !important;
+}
+
+.btn-logout {
+  color: #ef4444 !important;
+  font-weight: 700;
+}
+.btn-logout:hover {
+  background: #fef2f2;
+}
+
+@media (max-width: 1024px) {
+  .nav-welcome-text {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .nav-links span {
+    display: none;
+  }
+  .nav-btn-link {
+    padding: 10px;
+  }
+  .navbar-logo-img {
+    height: 32px;
+  }
+}
