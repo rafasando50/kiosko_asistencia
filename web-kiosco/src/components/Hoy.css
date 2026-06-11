@@ -37,7 +37,7 @@
   font-size: 3.2rem;
   text-align: center;
   font-family: 'Inter', sans-serif;
-  margin-bottom: 3.5rem;
+  margin: 1.5rem 0 2.5rem 0;
   width: 100%;
 }
 
@@ -399,12 +399,11 @@ tr:hover {
 @media (max-width: 768px) {
   .contenedor-principal { padding: 2rem 1rem; }
   .daily-card { padding: 2rem !important; }
-  .titulo-principal { font-size: 2.5rem; margin-bottom: 2rem; }
+  .titulo-principal { font-size: 2.5rem; margin: 1.2rem 0 2rem 0; }
   .filtros-grid { flex-direction: row; justify-content: center; }
   .input-group { width: 45% !important; }
   .button-group { width: 100% !important; justify-content: center; }
   .button-group .btn-premium { min-width: 0 !important; padding: 0 10px; }
-  th:nth-child(4), td:nth-child(4) { display: none; } /* Ocultar Entrada Ubicacion */
 }
 
 @media (max-width: 425px) {
@@ -412,9 +411,8 @@ tr:hover {
   .daily-card { 
     padding: 1.5rem !important; 
     border-radius: 16px; 
-    margin-top: -1.5rem;
   }
-  .titulo-principal { font-size: 2rem; margin-bottom: 1.5rem; text-align: left; }
+  .titulo-principal { font-size: 2rem; margin: 1rem 0 1.5rem 0; text-align: center; }
   .filtros-grid { flex-direction: column; align-items: stretch; }
   .input-group { width: 100% !important; }
   .button-group { width: 100% !important; }
@@ -422,19 +420,18 @@ tr:hover {
   .tabla-container { border-radius: 12px; margin-bottom: 1.5rem; }
   th { padding: 0.8rem 0.5rem; font-size: 0.7rem; }
   td { padding: 1rem 0.5rem; font-size: 0.85rem; }
-  th:nth-child(5), td:nth-child(5) { display: none; } /* Ocultar Salida Ubicacion */
 }
 
 @media (max-width: 375px) {
-  .daily-card { padding: 1rem !important; margin-top: -2rem; }
-  .titulo-principal { font-size: 1.8rem; }
+  .daily-card { padding: 1rem !important; }
+  .titulo-principal { font-size: 1.8rem; margin: 0.8rem 0 1.2rem 0; }
   th:nth-child(3), td:nth-child(3) { display: none; } /* Ocultar Salida */
 }
 
 @media (max-width: 320px) {
   .contenedor-principal { padding: 0.5rem 0.25rem; }
-  .daily-card { padding: 0.8rem !important; margin-top: -2.5rem; }
-  .titulo-principal { font-size: 1.6rem; margin-bottom: 1rem; }
+  .daily-card { padding: 0.8rem !important; }
+  .titulo-principal { font-size: 1.6rem; margin: 0.8rem 0 1rem 0; }
   td { font-size: 0.8rem; }
   .btn-premium { height: 44px; font-size: 0.9rem; }
 }

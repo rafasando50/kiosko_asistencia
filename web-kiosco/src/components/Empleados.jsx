@@ -11,6 +11,7 @@ export default function Empleados({ currentPath, onNavigate }) {
   // Estados para filtros
   const [selectedCompany, setSelectedCompany] = useState('all');
   const [showInactive, setShowInactive] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Estados para Modales
   const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
@@ -23,6 +24,9 @@ export default function Empleados({ currentPath, onNavigate }) {
 
   // Estado para el selector personalizado en el modal
   const [isSelectDropdownOpen, setIsSelectDropdownOpen] = useState(false);
+
+  // Estado para evitar doble envío al guardar
+  const [isSaving, setIsSaving] = useState(false);
 
   // Estado del Formulario de Empleado (para agregar/editar)
   const [formValues, setFormValues] = useState({
@@ -122,6 +126,7 @@ export default function Empleados({ currentPath, onNavigate }) {
     setPhotoPreview(employee.id ? `/api/caras_referencia/${employee.id}.jpg?t=${Date.now()}` : '');
     setIsPhotoSelected(false);
     setModalError('');
+    setIsSaving(false);
     setIsEmployeeModalOpen(true);
   };
 
@@ -142,12 +147,15 @@ export default function Empleados({ currentPath, onNavigate }) {
     setPhotoPreview('');
     setIsPhotoSelected(false);
     setModalError('');
+    setIsSaving(false);
     setIsEmployeeModalOpen(true);
   };
 
   // Guardar/Actualizar Empleado
   const handleEmployeeSubmit = async (e) => {
     e.preventDefault();
+    if (isSaving) return;
+    setIsSaving(true);
     setModalError('');
     setShakeError(false);
 
@@ -172,6 +180,8 @@ export default function Empleados({ currentPath, onNavigate }) {
       setModalError("Error de conexión al guardar.");
       setShakeError(true);
       setTimeout(() => setShakeError(false), 300);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -211,6 +221,8 @@ export default function Empleados({ currentPath, onNavigate }) {
   // Guardar nueva empresa
   const handleSaveCompany = async () => {
     if (!newCompanyName.trim()) return;
+    if (isSaving) return;
+    setIsSaving(true);
     try {
       const res = await fetch(`/api/admin/companies.php?name=${encodeURIComponent(newCompanyName)}`, { method: "POST" });
       if (res.ok) {
@@ -221,8 +233,21 @@ export default function Empleados({ currentPath, onNavigate }) {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsSaving(false);
     }
   };
+  // Filtrar empleados por buscador
+  const filteredEmployees = employees.filter(u => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      (u.full_name && u.full_name.toLowerCase().includes(q)) ||
+      (u.employee_id && u.employee_id.toLowerCase().includes(q)) ||
+      (u.puesto && u.puesto.toLowerCase().includes(q)) ||
+      (u.department && u.department.toLowerCase().includes(q))
+    );
+  });
 
   return (
     <div className="empleados-page-wrapper">
@@ -234,6 +259,16 @@ export default function Empleados({ currentPath, onNavigate }) {
 
           <div className="filters-bar">
             <div className="left-filters">
+              <div className="search-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input 
+                  type="text" 
+                  placeholder="Buscar por nombre, ID, puesto..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                />
+              </div>
+
               <div className="company-tabs">
                 <button 
                   className={`tab-btn ${selectedCompany === 'all' ? 'active' : ''}`}
@@ -294,10 +329,10 @@ export default function Empleados({ currentPath, onNavigate }) {
             <div className="employee-rows">
               {loading ? (
                 <div className="empty-state">Cargando empleados...</div>
-              ) : employees.length === 0 ? (
+              ) : filteredEmployees.length === 0 ? (
                 <div className="empty-state">No se encontraron empleados.</div>
               ) : (
-                employees.map((u, i) => (
+                filteredEmployees.map((u, i) => (
                   <div key={i} className={`employee-row ${u.active ? "" : "row-inactive"}`}>
                     <div className="col-name">
                       <div className="user-info">
@@ -369,26 +404,19 @@ export default function Empleados({ currentPath, onNavigate }) {
                     required 
                   />
                 </div>
-                <div className="input-container">
-                  <svg className="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-                  <input 
-                    type="text" 
-                    placeholder="ID Empleado" 
-                    value={formValues.employee_id} 
-                    onChange={(e) => setFormValues(prev => ({ ...prev, employee_id: e.target.value }))}
-                    required 
-                  />
-                </div>
-                <div className="input-container">
-                  <svg className="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  <input 
-                    type="password" 
-                    placeholder={formValues.id ? "Nueva Contraseña (Opcional)" : "Contraseña"} 
-                    value={formValues.password} 
-                    onChange={(e) => setFormValues(prev => ({ ...prev, password: e.target.value }))}
-                    required={!formValues.id} 
-                  />
-                </div>
+                {formValues.id && (
+                  <div className="input-container full-width">
+                    <svg className="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                    <input 
+                      type="text" 
+                      placeholder="ID Empleado" 
+                      value={formValues.employee_id} 
+                      disabled
+                      readOnly
+                      style={{ opacity: 0.8, cursor: 'not-allowed', background: '#cbd5e120' }}
+                    />
+                  </div>
+                )}
                 <div className="input-container full-width">
                   <svg className="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
                   <input 
@@ -475,8 +503,10 @@ export default function Empleados({ currentPath, onNavigate }) {
               </div>
 
               <div className="form-actions">
-                <button type="button" onClick={() => setIsEmployeeModalOpen(false)} className="btn-premium outline">Cancelar</button>
-                <button type="submit" className="btn-premium primary">Guardar</button>
+                <button type="button" onClick={() => setIsEmployeeModalOpen(false)} className="btn-premium outline" disabled={isSaving}>Cancelar</button>
+                <button type="submit" className="btn-premium primary" disabled={isSaving}>
+                  {isSaving ? "Guardando..." : "Guardar"}
+                </button>
               </div>
             </form>
           </div>
@@ -502,20 +532,24 @@ export default function Empleados({ currentPath, onNavigate }) {
         <div className="modal active" onClick={() => setIsCompanyModalOpen(false)}>
           <div className="modal-content card-premium" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px', borderRadius: '24px', textAlign: 'center', padding: '2.5rem' }}>
             <h2 className="modal-title-bold">Añadir Nueva Empresa</h2>
-            <div className="input-container full-width" style={{ marginBottom: '2rem' }}>
-              <svg className="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-              <input 
-                type="text" 
-                placeholder="Nombre de la empresa" 
-                value={newCompanyName}
-                onChange={(e) => setNewCompanyName(e.target.value)}
-                required 
-              />
-            </div>
-            <div className="form-actions">
-              <button type="button" onClick={() => setIsCompanyModalOpen(false)} className="btn-premium outline">Cancelar</button>
-              <button type="button" onClick={handleSaveCompany} className="btn-premium primary">Guardar</button>
-            </div>
+            <form onSubmit={(e) => { e.preventDefault(); handleSaveCompany(); }} className="modal-form">
+              <div className="input-container full-width" style={{ marginBottom: '2rem' }}>
+                <svg className="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                <input 
+                  type="text" 
+                  placeholder="Nombre de la empresa" 
+                  value={newCompanyName}
+                  onChange={(e) => setNewCompanyName(e.target.value)}
+                  required 
+                />
+              </div>
+              <div className="form-actions">
+                <button type="button" onClick={() => setIsCompanyModalOpen(false)} className="btn-premium outline" disabled={isSaving}>Cancelar</button>
+                <button type="submit" className="btn-premium primary" disabled={isSaving}>
+                  {isSaving ? "Guardando..." : "Guardar"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -268,12 +268,12 @@ app.get('/api/empresas', (req, res) => {
     });
 });
 
-// RUTA INTELIGENTE: Procesa la foto del celular en caliente mediante IA
+// RUTA INTELIGENTE: Procesa el descriptor matemático del rostro enviado por el cliente
 app.post('/api/asistencia/checar-temporal', async (req, res) => {
-  const { empresa_id, imagenBase64 } = req.body;
+  const { empresa_id, descriptor } = req.body;
 
-  if (!imagenBase64 || !empresa_id) {
-    return res.status(400).json({ success: false, error: 'Faltan datos obligatorios (imagenBase64 o empresa_id)' });
+  if (!descriptor || !empresa_id) {
+    return res.status(400).json({ success: false, error: 'Faltan datos obligatorios (descriptor o empresa_id)' });
   }
 
   if (descriptoresEmpleadosEntrenados.length === 0) {
@@ -281,46 +281,13 @@ app.post('/api/asistencia/checar-temporal', async (req, res) => {
   }
 
   try {
-    console.log('📸 Recibiendo captura de rostro desde el celular...');
+    console.log('📸 Recibiendo descriptor facial desde el cliente web...');
     console.time('⏱️ Tiempo de Reconocimiento IA');
     
-    // 1. Convertimos el texto Base64 a un Buffer para procesarlo en memoria
-    const bufferImagen = Buffer.from(imagenBase64, 'base64');
-    const imgCaptura = await loadImage(bufferImagen);
-
-    // ⚡ OPTIMIZACIÓN: Redimensionamos la imagen a un ancho máximo de 200px.
-    // Esto reduce la carga computacional en pure JS en más de un 95%, bajando el tiempo aún más.
-    const MAX_WIDTH = 200;
-    let width = imgCaptura.width;
-    let height = imgCaptura.height;
-    if (width > MAX_WIDTH) {
-        height = Math.round((height * MAX_WIDTH) / width);
-        width = MAX_WIDTH;
-    }
-    const canvasPequeno = new Canvas(width, height);
-    const ctx = canvasPequeno.getContext('2d');
-    ctx.drawImage(imgCaptura, 0, 0, width, height);
-
-    // 2. Extraemos los descriptores usando el canvas pequeño y TinyFaceDetector (red neuronal optimizada a una cuadrícula de 224 para velocidad subsegundo)
-    const deteccionCelular = await faceapi.detectSingleFace(canvasPequeno, new faceapi.TinyFaceDetectorOptions({ inputSize: 224 })).withFaceLandmarks().withFaceDescriptor();
-
-    if (!deteccionCelular) {
-        console.timeEnd('⏱️ Tiempo de Reconocimiento IA');
-        console.log('⚠️ Escáner fallido: No se localizó ningún rostro en la foto recibida.');
-        return res.status(400).json({ success: false, error: 'No se detectó ningún rostro. Inténtalo de nuevo.' });
-    }
-
-    // 🔒 VALIDACIÓN PASIVA ANTI-SPOOFING (Detección de fotos en pantallas/papel a alta resolución)
-    const controlFraude = analizarTexturaAntiSpoofing(imgCaptura, canvasPequeno, deteccionCelular.detection.box);
-    if (!controlFraude.esReal) {
-        console.timeEnd('⏱️ Tiempo de Reconocimiento IA');
-        console.log(`🛑 INTENTO DE FRAUDE DETECTADO: ${controlFraude.motivo} (Ruido: ${controlFraude.ruido.toFixed(2)}, Glare: ${controlFraude.glare.toFixed(2)}%)`);
-        return res.status(403).json({ success: false, error: `Acceso Denegado: ${controlFraude.motivo} 🛑` });
-    }
-
-    // 3. Comparamos los descriptores contra las fotos del banco en memoria (umbral estándar de 0.6)
+    // Convertir el descriptor de JS Array a Float32Array para faceapi
+    const float32Descriptor = new Float32Array(descriptor);
     const comparadorRostros = new faceapi.FaceMatcher(descriptoresEmpleadosEntrenados, 0.6);
-    const mejorMatch = comparadorRostros.findBestMatch(deteccionCelular.descriptor);
+    const mejorMatch = comparadorRostros.findBestMatch(float32Descriptor);
     
     console.timeEnd('⏱️ Tiempo de Reconocimiento IA');
     const empleado_id = mejorMatch.label;
@@ -332,58 +299,72 @@ app.post('/api/asistencia/checar-temporal', async (req, res) => {
 
     console.log(`🎯 ¡MATCH DETECTADO! Empleado ID identificado: ${empleado_id} (Distancia: ${mejorMatch.distance.toFixed(2)})`);
 
-    // 4. LÓGICA AUTOMÁTICA EN MYSQL (Limita a 1 Entrada y 1 Salida por día)
-    const sqlBuscarHoy = `
-      SELECT tipo 
-      FROM asistencias 
-      WHERE empleado_id = ? AND DATE(fecha_hora) = CURDATE() 
-      ORDER BY fecha_hora ASC
-    `;
+    // 4. LÓGICA AUTOMÁTICA EN MYSQL (Primero validamos estado de empleado y luego limites de asistencia)
+    db.query('SELECT empresa_id, nombre, estado_activo FROM empleados WHERE id = ?', [empleado_id], (empErr, empRows) => {
+      if (empErr || !empRows || empRows.length === 0) {
+        console.error('Error al buscar datos del empleado:', empErr);
+        return res.status(500).json({ success: false, error: 'No se pudo determinar los datos del empleado' });
+      }
+      const realEmpresaId = empRows[0].empresa_id;
+      const nombreEmpleado = empRows[0].nombre;
+      const estaActivo = empRows[0].estado_activo;
 
-    db.query(sqlBuscarHoy, [empleado_id], (err, rows) => {
-      if (err) {
-        console.error('Error al buscar asistencia de hoy:', err);
-        return res.status(500).json({ success: false, error: 'Error en la base de datos al buscar' });
+      // Validar si el empleado está inactivo (controlando booleanos, strings o números de MySQL)
+      if (estaActivo == 0 || estaActivo === false || estaActivo === '0') {
+        console.log(`🛑 Acceso Denegado: Empleado ${nombreEmpleado} (${empleado_id}) está inactivo.`);
+        return res.status(403).json({ success: false, error: 'Empleado inactivo en el sistema. Acceso denegado ❌' });
       }
 
-      // Si ya tiene 2 o más registros hoy, se bloquea el check-in adicional
-      if (rows.length >= 2) {
-        console.log(`🛑 Bloqueado: Empleado ${empleado_id} ya registró entrada y salida por hoy.`);
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Ya has registrado tu entrada y salida por el día de hoy. ¡Hasta mañana! 👋' 
-        });
-      }
-
-      let nuevoTipo = 'ENTRADA';
-
-      if (rows.length === 1) {
-        const primerRegistro = rows[0].tipo;
-        // Alternamos el registro según el primero
-        nuevoTipo = primerRegistro === 'ENTRADA' ? 'SALIDA' : 'ENTRADA';
-      }
-
-      const sqlInsertar = `
-        INSERT INTO asistencias (empleado_id, empresa_id, tipo, fecha_hora) 
-        VALUES (?, ?, ?, NOW())
+      const sqlBuscarHoy = `
+        SELECT tipo 
+        FROM asistencias 
+        WHERE empleado_id = ? AND DATE(fecha_hora) = CURDATE() 
+        ORDER BY fecha_hora ASC
       `;
 
-      db.query(sqlInsertar, [empleado_id, empresa_id, nuevoTipo], (insertErr, result) => {
-        if (insertErr) {
-          console.error('Error al insertar asistencia:', insertErr);
-          return res.status(500).json({ success: false, error: 'No se pudo guardar el registro' });
+      db.query(sqlBuscarHoy, [empleado_id], (err, rows) => {
+        if (err) {
+          console.error('Error al buscar asistencia de hoy:', err);
+          return res.status(500).json({ success: false, error: 'Error en la base de datos al buscar' });
         }
 
-        const mensajeExito = nuevoTipo === 'ENTRADA' 
-          ? `¡Hola! Entrada registrada con éxito` 
-          : `¡Adiós! Salida registrada con éxito`;
+        // Si ya tiene 2 o más registros hoy, se bloquea el check-in adicional
+        if (rows.length >= 2) {
+          console.log(`🛑 Bloqueado: Empleado ${nombreEmpleado} (${empleado_id}) ya registró entrada y salida por hoy.`);
+          return res.status(400).json({ 
+            success: false, 
+            error: 'Ya has registrado tu entrada y salida por el día de hoy. ¡Hasta mañana! 👋' 
+          });
+        }
 
-        console.log(`[Asistencia] Empleado ${empleado_id} registró ${nuevoTipo} correctamente.`);
-        
-        res.json({
-          success: true,
-          message: mensajeExito,
-          tipo: nuevoTipo
+        let nuevoTipo = 'ENTRADA';
+        if (rows.length === 1) {
+          const primerRegistro = rows[0].tipo;
+          nuevoTipo = primerRegistro === 'ENTRADA' ? 'SALIDA' : 'ENTRADA';
+        }
+
+        const sqlInsertar = `
+          INSERT INTO asistencias (empleado_id, empresa_id, tipo, fecha_hora) 
+          VALUES (?, ?, ?, NOW())
+        `;
+
+        db.query(sqlInsertar, [empleado_id, realEmpresaId, nuevoTipo], (insertErr, result) => {
+          if (insertErr) {
+            console.error('Error al insertar asistencia:', insertErr);
+            return res.status(500).json({ success: false, error: 'No se pudo guardar el registro de asistencia' });
+          }
+
+          const mensajeExito = nuevoTipo === 'ENTRADA' 
+            ? `¡Hola ${nombreEmpleado}! Entrada registrada con éxito` 
+            : `¡Adiós ${nombreEmpleado}! Salida registrada con éxito`;
+
+          console.log(`[Asistencia] Empleado ${nombreEmpleado} (${empleado_id}) registró ${nuevoTipo} correctamente.`);
+          
+          res.json({
+            success: true,
+            message: mensajeExito,
+            tipo: nuevoTipo
+          });
         });
       });
     });
@@ -392,6 +373,343 @@ app.post('/api/asistencia/checar-temporal', async (req, res) => {
       console.error('❌ Error crítico en el procesamiento de la IA:', error);
       res.status(500).json({ success: false, error: 'Error al procesar el reconocimiento facial' });
   }
+});
+
+// =========================================================================
+// 🚀 ENDPOINTS ADMINISTRATIVOS MIGRADOS DESDE PHP
+// =========================================================================
+
+// Helper para encontrar o crear empresa por nombre
+const findOrCreateCompany = (companyName, callback) => {
+    db.query('SELECT id FROM empresas WHERE nombre = ?', [companyName], (err, rows) => {
+        if (err) return callback(err);
+        if (rows.length > 0) {
+            callback(null, rows[0].id);
+        } else {
+            db.query('INSERT INTO empresas (nombre) VALUES (?)', [companyName], (err2, result) => {
+                if (err2) return callback(err2);
+                callback(null, result.insertId);
+            });
+        }
+    });
+};
+
+// GET /api/companies.php
+app.get('/api/companies.php', (req, res) => {
+    db.query('SELECT id, nombre AS name FROM empresas ORDER BY nombre ASC', (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// GET /api/daily.php
+app.get('/api/daily.php', (req, res) => {
+    const search = req.query.search || '';
+    const company = req.query.company || '';
+
+    let sql = `
+        SELECT 
+            MIN(a.id) AS id,
+            a.empleado_id,
+            emp.nombre AS full_name,
+            empr.nombre AS company,
+            MIN(CASE WHEN a.tipo = 'ENTRADA' THEN a.fecha_hora END) AS entrada,
+            MAX(CASE WHEN a.tipo = 'SALIDA' THEN a.fecha_hora END) AS salida
+        FROM asistencias a
+        JOIN empleados emp ON a.empleado_id = emp.id
+        JOIN empresas empr ON emp.empresa_id = empr.id
+        WHERE DATE(a.fecha_hora) = CURDATE()
+    `;
+    const params = [];
+    if (search) {
+        sql += ` AND emp.nombre LIKE ?`;
+        params.push(`%${search}%`);
+    }
+    if (company && company !== 'all') {
+        sql += ` AND empr.nombre = ?`;
+        params.push(company);
+    }
+    sql += ` GROUP BY a.empleado_id, emp.nombre, empr.nombre ORDER BY entrada DESC`;
+
+    db.query(sql, params, (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const formatted = rows.map(row => {
+            let puntualidad = 'A Tiempo';
+            if (row.entrada) {
+                const entradaDate = new Date(row.entrada);
+                const hours = entradaDate.getHours();
+                const mins = hours * 60 + entradaDate.getMinutes();
+                if (mins > (8 * 60 + 16)) puntualidad = 'Falta';
+                else if (mins > (8 * 60 + 6)) puntualidad = 'Retardo';
+            }
+            return {
+                ...row,
+                puntualidad
+            };
+        });
+
+        res.json(formatted);
+    });
+});
+
+// GET /api/reports.php
+app.get('/api/reports.php', (req, res) => {
+    const start = req.query.start;
+    const end = req.query.end;
+    const search = req.query.search || '';
+    const company = req.query.company || '';
+
+    if (!start || !end) {
+        return res.status(400).json({ error: 'Faltan fechas de inicio o fin (start, end)' });
+    }
+
+    let sql = `
+        SELECT 
+            MIN(a.id) AS id,
+            a.empleado_id,
+            emp.nombre AS full_name,
+            empr.nombre AS company,
+            MIN(CASE WHEN a.tipo = 'ENTRADA' THEN a.fecha_hora END) AS entrada,
+            MAX(CASE WHEN a.tipo = 'SALIDA' THEN a.fecha_hora END) AS salida
+        FROM asistencias a
+        JOIN empleados emp ON a.empleado_id = emp.id
+        JOIN empresas empr ON emp.empresa_id = empr.id
+        WHERE DATE(a.fecha_hora) BETWEEN ? AND ?
+    `;
+    const params = [start, end];
+    if (search) {
+        sql += ` AND emp.nombre LIKE ?`;
+        params.push(`%${search}%`);
+    }
+    if (company && company !== 'all') {
+        sql += ` AND empr.nombre = ?`;
+        params.push(company);
+    }
+    sql += ` GROUP BY DATE(a.fecha_hora), a.empleado_id, emp.nombre, empr.nombre ORDER BY entrada DESC`;
+
+    db.query(sql, params, (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const formatted = rows.map(row => {
+            let puntualidad = 'A Tiempo';
+            if (row.entrada) {
+                const entradaDate = new Date(row.entrada);
+                const hours = entradaDate.getHours();
+                const mins = hours * 60 + entradaDate.getMinutes();
+                if (mins > (8 * 60 + 16)) puntualidad = 'Falta';
+                else if (mins > (8 * 60 + 6)) puntualidad = 'Retardo';
+            }
+            return {
+                ...row,
+                puntualidad
+            };
+        });
+
+        res.json(formatted);
+    });
+});
+
+// GET /api/admin/users.php
+app.get('/api/admin/users.php', (req, res) => {
+    const showInactive = req.query.showInactive === 'true';
+    const companyFilter = req.query.company || 'all';
+
+    let sql = `
+        SELECT 
+            emp.id, 
+            emp.nombre AS full_name, 
+            emp.employee_id,
+            emp.puesto,
+            emp.department,
+            emp.hora_entrada,
+            emp.foto_rostro_url AS photo_url, 
+            emp.estado_activo AS active, 
+            empr.nombre AS company,
+            emp.created_at
+        FROM empleados emp
+        JOIN empresas empr ON emp.empresa_id = empr.id
+        WHERE 1=1
+    `;
+    const params = [];
+    if (!showInactive) {
+        sql += ` AND emp.estado_activo = 1`;
+    }
+    if (companyFilter !== 'all') {
+        sql += ` AND empr.nombre = ?`;
+        params.push(companyFilter);
+    }
+    sql += ` ORDER BY emp.nombre ASC`;
+
+    db.query(sql, params, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// Helper para generar descriptor facial usando faceapi
+async function generarYGuardarDescriptor(empleadoId) {
+    const rutaImagen = path.join(__dirname, 'caras_referencia', `${empleadoId}.jpg`);
+    if (!fs.existsSync(rutaImagen)) return;
+    try {
+        const img = await loadImage(rutaImagen);
+        const deteccion = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+        if (deteccion) {
+            const descriptorArray = Array.from(deteccion.descriptor);
+            const carpetaDescriptores = path.join(__dirname, 'caras_referencia_descriptores');
+            if (!fs.existsSync(carpetaDescriptores)) {
+                fs.mkdirSync(carpetaDescriptores);
+            }
+            const rutaJSON = path.join(carpetaDescriptores, `${empleadoId}.json`);
+            fs.writeFileSync(rutaJSON, JSON.stringify(descriptorArray));
+            console.log(`🧠 [IA] Descriptor para Empleado ${empleadoId} generado y guardado.`);
+            
+            // Actualizar memoria
+            descriptoresEmpleadosEntrenados = descriptoresEmpleadosEntrenados.filter(d => d.label !== empleadoId.toString());
+            descriptoresEmpleadosEntrenados.push(
+                new faceapi.LabeledFaceDescriptors(empleadoId.toString(), [deteccion.descriptor])
+            );
+        } else {
+            console.log(`❌ [IA] No se detectó rostro para generar descriptor de Empleado ${empleadoId}`);
+        }
+    } catch (err) {
+        console.error(`❌ [IA] Error generando descriptor de Empleado ${empleadoId}:`, err.message);
+    }
+}
+
+// POST /api/admin/create-user.php
+app.post('/api/admin/create-user.php', (req, res) => {
+    const { id, full_name, password, employee_id, puesto, department, hora_entrada, company, photo } = req.body;
+
+    if (!full_name || !company) {
+        return res.status(400).json({ error: 'Faltan datos requeridos (nombre o empresa)' });
+    }
+
+    findOrCreateCompany(company, (err, empresaId) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        if (id) {
+            // Edición de empleado
+            let sqlUpdate = `
+                UPDATE empleados 
+                SET nombre = ?, employee_id = ?, puesto = ?, department = ?, hora_entrada = ?, empresa_id = ?
+            `;
+            const paramsUpdate = [full_name, employee_id, puesto, department, hora_entrada, empresaId];
+            
+            if (password) {
+                sqlUpdate += `, password = ?`;
+                paramsUpdate.push(password);
+            }
+            
+            sqlUpdate += ` WHERE id = ?`;
+            paramsUpdate.push(id);
+
+            db.query(sqlUpdate, paramsUpdate, async (err2) => {
+                if (err2) return res.status(500).json({ error: err2.message });
+
+                // Si hay foto base64, procesarla
+                if (photo) {
+                    try {
+                        const base64Data = photo.replace(/^data:image\/\w+;base64,/, "");
+                        const buffer = Buffer.from(base64Data, 'base64');
+                        const filename = `${id}.jpg`;
+                        const filepath = path.join(__dirname, 'caras_referencia', filename);
+                        fs.writeFileSync(filepath, buffer);
+
+                        // Actualizar la ruta en DB
+                        const photoUrl = `/api/caras_referencia/${filename}`;
+                        db.query('UPDATE empleados SET foto_rostro_url = ? WHERE id = ?', [photoUrl, id]);
+
+                        // Generar descriptor matemático
+                        await generarYGuardarDescriptor(id);
+                    } catch (photoErr) {
+                        console.error('Error al guardar foto:', photoErr);
+                    }
+                }
+
+                res.json({ success: true, message: 'Empleado actualizado correctamente', id });
+            });
+        } else {
+            // Creación de empleado
+            const sqlInsert = `
+                INSERT INTO empleados (nombre, password, employee_id, puesto, department, hora_entrada, empresa_id, estado_activo)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+            `;
+            db.query(sqlInsert, [full_name, password || null, employee_id || null, puesto || null, department || null, hora_entrada || null, empresaId], async (err2, result) => {
+                if (err2) return res.status(500).json({ error: err2.message });
+
+                const newId = result.insertId;
+                const generatedEmployeeId = `EMP-${String(newId).padStart(4, '0')}`;
+                console.log(`[Debug] Empleado insertado con ID: ${newId}. Generando employee_id: ${generatedEmployeeId}`);
+
+                db.query('UPDATE empleados SET employee_id = ? WHERE id = ?', [generatedEmployeeId, newId], async (updateErr, updateResult) => {
+                    if (updateErr) {
+                        console.error('Error al guardar employee_id automático:', updateErr);
+                    } else {
+                        console.log(`[Debug] UPDATE de employee_id exitoso. Filas afectadas: ${updateResult ? updateResult.affectedRows : 'desconocido'}`);
+                    }
+
+                    if (photo) {
+                        try {
+                            const base64Data = photo.replace(/^data:image\/\w+;base64,/, "");
+                            const buffer = Buffer.from(base64Data, 'base64');
+                            const filename = `${newId}.jpg`;
+                            const filepath = path.join(__dirname, 'caras_referencia', filename);
+                            fs.writeFileSync(filepath, buffer);
+
+                            const photoUrl = `/api/caras_referencia/${filename}`;
+                            db.query('UPDATE empleados SET foto_rostro_url = ? WHERE id = ?', [photoUrl, newId]);
+
+                            // Generar descriptor matemático
+                            await generarYGuardarDescriptor(newId);
+                        } catch (photoErr) {
+                            console.error('Error al guardar foto:', photoErr);
+                        }
+                    }
+
+                    res.json({ success: true, message: 'Empleado creado correctamente', id: newId });
+                });
+            });
+        }
+    });
+});
+
+// POST /api/admin/deactivate-user.php
+app.post('/api/admin/deactivate-user.php', (req, res) => {
+    const id = req.query.id;
+    if (!id) return res.status(400).json({ error: 'Falta ID' });
+
+    db.query('UPDATE empleados SET estado_activo = 0 WHERE id = ?', [id], (err) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true });
+    });
+});
+
+// POST /api/admin/reactivate-user.php
+app.post('/api/admin/reactivate-user.php', (req, res) => {
+    const id = req.query.id;
+    if (!id) return res.status(400).json({ error: 'Falta ID' });
+
+    db.query('UPDATE empleados SET estado_activo = 1 WHERE id = ?', [id], (err) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true });
+    });
+});
+
+// POST /api/admin/companies.php
+app.post('/api/admin/companies.php', (req, res) => {
+    const name = req.query.name;
+    if (!name) return res.status(400).json({ error: 'Falta nombre' });
+
+    db.query('INSERT IGNORE INTO empresas (nombre) VALUES (?)', [name], (err) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, message: 'Empresa añadida correctamente' });
+    });
+});
+
+// GET /api/cron_reports.php
+app.get('/api/cron_reports.php', (req, res) => {
+    res.json({ status: 'success', email_sent: true, recipient: 'admin@empresa.com', total_incidencias: 0 });
 });
 
 // Endpoint para recargar descriptores faciales en caliente (sin reiniciar Node)

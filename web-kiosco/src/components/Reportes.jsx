@@ -51,14 +51,20 @@ export default function Reportes({ currentPath, onNavigate }) {
   }, []);
 
   // Cargar asistencias
-  async function loadReports() {
+  async function loadReports(overrideFilters = {}) {
     setLoading(true);
+    const start = overrideFilters.start !== undefined ? overrideFilters.start : startDate;
+    const end = overrideFilters.end !== undefined ? overrideFilters.end : endDate;
+    const qSearch = overrideFilters.search !== undefined ? overrideFilters.search : search;
+    const comp = overrideFilters.company !== undefined ? overrideFilters.company : selectedCompany;
+    const punct = overrideFilters.punctuality !== undefined ? overrideFilters.punctuality : selectedPunctuality;
+
     try {
-      const res = await fetch(`/api/reports.php?start=${startDate}&end=${endDate}&search=${encodeURIComponent(search)}&company=${encodeURIComponent(selectedCompany)}`);
+      const res = await fetch(`/api/reports.php?start=${start}&end=${end}&search=${encodeURIComponent(qSearch)}&company=${encodeURIComponent(comp)}`);
       if (res.ok) {
         let data = await res.json();
-        if (selectedPunctuality) {
-          data = data.filter(r => r.puntualidad === selectedPunctuality);
+        if (punct) {
+          data = data.filter(r => r.puntualidad === punct);
         }
         setAttendances(data);
       }
@@ -86,13 +92,23 @@ export default function Reportes({ currentPath, onNavigate }) {
   };
 
   const handleLimpiar = () => {
-    setStartDate(getFirstDayOfMonth());
-    setEndDate(getTodayDate());
+    const start = getFirstDayOfMonth();
+    const end = getTodayDate();
+    setStartDate(start);
+    setEndDate(end);
     setSearch('');
     setSelectedCompany('');
     setSelectedPunctuality('');
     // Forzar la navegación limpia (quitando la query del retardo)
     onNavigate('/admin/reportes');
+
+    loadReports({
+      start,
+      end,
+      search: '',
+      company: '',
+      punctuality: ''
+    });
   };
 
   // Exportar con ExcelJS
@@ -113,8 +129,6 @@ export default function Reportes({ currentPath, onNavigate }) {
           { header: 'ID', key: 'id', width: 15 },
           { header: 'Entrada', key: 'entrada', width: 22 },
           { header: 'Salida', key: 'salida', width: 22 },
-          { header: 'Ubicación Entrada', key: 'ubi_entrada', width: 25 },
-          { header: 'Ubicación Salida', key: 'ubi_salida', width: 25 },
           { header: 'Puntualidad', key: 'puntualidad', width: 20 }
         ];
 
@@ -137,8 +151,6 @@ export default function Reportes({ currentPath, onNavigate }) {
             id: r.employee_id,
             entrada: r.entrada ? new Date(r.entrada).toLocaleString() : "-",
             salida: isCompletado ? new Date(r.salida).toLocaleString() : "En Turno",
-            ubi_entrada: r.entrada_estacion || "Remoto",
-            ubi_salida: isCompletado ? (r.salida_estacion || "Remoto") : "-",
             puntualidad: r.puntualidad
           });
 
@@ -317,8 +329,6 @@ export default function Reportes({ currentPath, onNavigate }) {
                   <th>Empleado</th>
                   <th>Entrada</th>
                   <th>Salida</th>
-                  <th>Ubicación E.</th>
-                  <th>Ubicación S.</th>
                   <th>Estado</th>
                   <th>Puntualidad</th>
                 </tr>
@@ -326,11 +336,11 @@ export default function Reportes({ currentPath, onNavigate }) {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="sin-registros">Cargando reportes...</td>
+                    <td colSpan="5" className="sin-registros">Cargando reportes...</td>
                   </tr>
                 ) : attendances.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="sin-registros">No se encontraron registros.</td>
+                    <td colSpan="5" className="sin-registros">No se encontraron registros.</td>
                   </tr>
                 ) : (
                   attendances.map((r, idx) => (
@@ -338,8 +348,6 @@ export default function Reportes({ currentPath, onNavigate }) {
                       <td className="nombre">{r.full_name}</td>
                       <td>{r.entrada ? new Date(r.entrada).toLocaleString() : "-"}</td>
                       <td>{r.salida ? new Date(r.salida).toLocaleString() : "-"}</td>
-                      <td className="location-cell">{r.entrada_estacion || "-"}</td>
-                      <td className="location-cell">{r.salida ? (r.salida_estacion || "-") : "-"}</td>
                       <td>
                         <span className={`badge-status ${r.salida ? 'completado' : 'pendiente'}`}>
                           {r.salida ? "Completado" : "En Turno"}

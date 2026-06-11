@@ -33,7 +33,7 @@
   font-size: 3.2rem;
   text-align: center;
   font-family: 'Inter', sans-serif;
-  margin-bottom: 3.5rem;
+  margin: 1.5rem 0 2.5rem 0;
   width: 100%;
 }
 
@@ -48,6 +48,8 @@
   border-radius: 16px;
   border: 1px solid #e2e8f0;
   box-sizing: border-box;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .action-buttons {
@@ -68,7 +70,8 @@
 .left-filters {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .company-tabs {
@@ -590,8 +593,51 @@
   font-style: italic;
 }
 
+/* Reglas adaptativas para pantallas de escritorio medianas (entre 769px y 1200px) */
+@media (max-width: 1200px) and (min-width: 769px) {
+  .card-premium.management-card {
+    padding: 2rem !important;
+  }
+
+  .filters-bar {
+    padding: 1rem 1.25rem;
+    gap: 1rem;
+  }
+
+  .left-filters {
+    gap: 1rem;
+    flex: 1 1 auto;
+  }
+
+  .search-box input {
+    width: 100%;
+    max-width: 200px;
+    min-width: 150px;
+  }
+
+  .search-box input:focus {
+    width: 100%;
+    max-width: 220px;
+  }
+
+  .tab-btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .btn-main-action {
+    height: 44px;
+    min-width: 110px;
+    font-size: 0.9rem;
+    padding: 0 12px;
+  }
+}
+
 /* Responsive Rules */
 @media (max-width: 768px) {
+  .card-premium {
+    padding: 1.5rem !important;
+  }
   .filters-bar {
     flex-direction: column;
     align-items: stretch;
@@ -599,8 +645,18 @@
   }
   .left-filters {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 1rem;
+    width: 100%;
+  }
+  .search-box {
+    width: 100%;
+  }
+  .search-box input {
+    width: 100%;
+  }
+  .search-box input:focus {
+    width: 100%;
   }
   .company-tabs {
     flex-wrap: wrap;
@@ -625,12 +681,19 @@
 }
 
 @media (max-width: 425px) {
+  .card-premium {
+    padding: 1rem !important;
+  }
+  .filters-bar {
+    padding: 1rem 0.75rem !important;
+  }
   .content {
     padding: 1.5rem 0.75rem;
   }
   .gradient-text {
     font-size: 2.2rem;
-    margin-bottom: 2rem;
+    margin: 1rem 0 1.5rem 0;
+    text-align: center;
   }
   .action-buttons {
     flex-direction: column;
@@ -719,5 +782,41 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Estilos del buscador de empleados */
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.search-box input {
+  padding: 10px 14px 10px 40px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  background: white;
+  width: 240px;
+  transition: all 0.25s ease;
+  font-family: 'Inter', sans-serif;
+  color: #1e293b;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+.search-box input:focus {
+  border-color: #4a90e2;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  width: 280px;
+}
+
+.search-box .search-icon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  pointer-events: none;
 }
 

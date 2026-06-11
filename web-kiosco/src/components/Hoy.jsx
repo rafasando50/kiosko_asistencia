@@ -220,8 +220,6 @@ export default function Hoy({ currentPath, onNavigate }) {
                   <th>Empleado</th>
                   <th>Entrada</th>
                   <th>Salida</th>
-                  <th>Ubicación E.</th>
-                  <th>Ubicación S.</th>
                   <th>Estado</th>
                   <th>Puntualidad</th>
                 </tr>
@@ -229,11 +227,11 @@ export default function Hoy({ currentPath, onNavigate }) {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="sin-registros">Cargando registros...</td>
+                    <td colSpan="5" className="sin-registros">Cargando registros...</td>
                   </tr>
                 ) : attendances.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="sin-registros">No hay registros el día de hoy.</td>
+                    <td colSpan="5" className="sin-registros">No hay registros el día de hoy.</td>
                   </tr>
                 ) : (
                   attendances.map((row, idx) => (
@@ -241,8 +239,6 @@ export default function Hoy({ currentPath, onNavigate }) {
                       <td className="nombre">{row.full_name}</td>
                       <td>{formatTime(row.entrada)}</td>
                       <td>{formatTime(row.salida)}</td>
-                      <td className="location-cell">{row.entrada_estacion || "-"}</td>
-                      <td className="location-cell">{row.salida ? (row.salida_estacion || "-") : "-"}</td>
                       <td>
                         <span className={`badge-status ${row.salida ? 'completado' : 'pendiente'}`}>
                           {row.salida ? "Completado" : "En Turno"}
