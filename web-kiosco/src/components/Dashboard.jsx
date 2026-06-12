@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import './Dashboard.css';
+import { API_URL } from '../config';
 
 export default function Dashboard({ currentPath, onNavigate }) {
   const [stats, setStats] = useState({
@@ -13,7 +14,7 @@ export default function Dashboard({ currentPath, onNavigate }) {
   useEffect(() => {
     async function loadStats() {
       try {
-        const res = await fetch("/api/daily.php?mode=dashboard");
+        const res = await fetch(`${API_URL}/api/daily.php?mode=dashboard`);
         if (res.ok) {
           const data = await res.json();
           setStats({

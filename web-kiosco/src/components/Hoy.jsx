@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import './Hoy.css';
+import { API_URL } from '../config';
 
 export default function Hoy({ currentPath, onNavigate }) {
   const [companies, setCompanies] = useState([]);
@@ -19,7 +20,7 @@ export default function Hoy({ currentPath, onNavigate }) {
   // 1. Cargar Empresas
   async function loadCompanies() {
     try {
-      const res = await fetch("/api/companies.php");
+      const res = await fetch(`${API_URL}/api/companies.php`);
       if (res.ok) {
         const data = await res.json();
         setCompanies(data);
@@ -33,7 +34,7 @@ export default function Hoy({ currentPath, onNavigate }) {
   async function loadHoy() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/daily.php?search=${encodeURIComponent(search)}&company=${encodeURIComponent(selectedCompany)}`);
+      const res = await fetch(`${API_URL}/api/daily.php?search=${encodeURIComponent(search)}&company=${encodeURIComponent(selectedCompany)}`);
       if (res.ok) {
         const data = await res.json();
         setAttendances(data);
@@ -71,7 +72,7 @@ export default function Hoy({ currentPath, onNavigate }) {
     setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/daily.php?search=&company=`);
+        const res = await fetch(`${API_URL}/api/daily.php?search=&company=`);
         if (res.ok) {
           const data = await res.json();
           setAttendances(data);
@@ -88,7 +89,7 @@ export default function Hoy({ currentPath, onNavigate }) {
   const handleEnviarReporte = async () => {
     setSendingReport(true);
     try {
-      const res = await fetch("/api/cron_reports.php");
+      const res = await fetch(`${API_URL}/api/cron_reports.php`);
       const data = await res.json();
 
       if (data.status === "success") {

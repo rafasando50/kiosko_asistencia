@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import './Empleados.css';
+import { API_URL } from '../config';
 
 export default function Empleados({ currentPath, onNavigate }) {
   // Estados para datos
@@ -53,7 +54,7 @@ export default function Empleados({ currentPath, onNavigate }) {
   // 1. Cargar Empresas
   async function loadCompanies() {
     try {
-      const res = await fetch("/api/companies.php");
+      const res = await fetch(`${API_URL}/api/companies.php`);
       if (res.ok) {
         const data = await res.json();
         setCompanies(data);
@@ -71,7 +72,7 @@ export default function Empleados({ currentPath, onNavigate }) {
   async function loadEmployees() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/users.php?showInactive=${showInactive}&company=${selectedCompany}`);
+      const res = await fetch(`${API_URL}/api/admin/users.php?showInactive=${showInactive}&company=${selectedCompany}`);
       if (res.ok) {
         const data = await res.json();
         setEmployees(data);
@@ -123,7 +124,7 @@ export default function Empleados({ currentPath, onNavigate }) {
       tipo_horario: 'Personalizado',
       photo: ''
     });
-    setPhotoPreview(employee.id ? `/api/caras_referencia/${employee.id}.jpg?t=${Date.now()}` : '');
+    setPhotoPreview(employee.id ? `${API_URL}/api/caras_referencia/${employee.id}.jpg?t=${Date.now()}` : '');
     setIsPhotoSelected(false);
     setModalError('');
     setIsSaving(false);
@@ -160,7 +161,7 @@ export default function Empleados({ currentPath, onNavigate }) {
     setShakeError(false);
 
     try {
-      const res = await fetch("/api/admin/create-user.php", {
+      const res = await fetch(`${API_URL}/api/admin/create-user.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formValues),
@@ -195,7 +196,7 @@ export default function Empleados({ currentPath, onNavigate }) {
   const handleDeactivateConfirm = async () => {
     if (!activeEmployee) return;
     try {
-      const res = await fetch(`/api/admin/deactivate-user.php?id=${activeEmployee.id}`, { method: "POST" });
+      const res = await fetch(`${API_URL}/api/admin/deactivate-user.php?id=${activeEmployee.id}`, { method: "POST" });
       if (res.ok) {
         setIsConfirmModalOpen(false);
         setActiveEmployee(null);
@@ -209,7 +210,7 @@ export default function Empleados({ currentPath, onNavigate }) {
   // Reactivar usuario
   const handleReactivateClick = async (id) => {
     try {
-      const res = await fetch(`/api/admin/reactivate-user.php?id=${id}`, { method: "POST" });
+      const res = await fetch(`${API_URL}/api/admin/reactivate-user.php?id=${id}`, { method: "POST" });
       if (res.ok) {
         loadEmployees();
       }
@@ -224,7 +225,7 @@ export default function Empleados({ currentPath, onNavigate }) {
     if (isSaving) return;
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/admin/companies.php?name=${encodeURIComponent(newCompanyName)}`, { method: "POST" });
+      const res = await fetch(`${API_URL}/api/admin/companies.php?name=${encodeURIComponent(newCompanyName)}`, { method: "POST" });
       if (res.ok) {
         setNewCompanyName('');
         setIsCompanyModalOpen(false);

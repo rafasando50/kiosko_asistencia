@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import './Reportes.css';
+import { API_URL } from '../config';
 
 export default function Reportes({ currentPath, onNavigate }) {
   // Parse query parameters
@@ -38,7 +39,7 @@ export default function Reportes({ currentPath, onNavigate }) {
   useEffect(() => {
     async function loadCompanies() {
       try {
-        const res = await fetch("/api/companies.php");
+        const res = await fetch(`${API_URL}/api/companies.php`);
         if (res.ok) {
           const data = await res.json();
           setCompanies(data);
@@ -60,7 +61,7 @@ export default function Reportes({ currentPath, onNavigate }) {
     const punct = overrideFilters.punctuality !== undefined ? overrideFilters.punctuality : selectedPunctuality;
 
     try {
-      const res = await fetch(`/api/reports.php?start=${start}&end=${end}&search=${encodeURIComponent(qSearch)}&company=${encodeURIComponent(comp)}`);
+      const res = await fetch(`${API_URL}/api/reports.php?start=${start}&end=${end}&search=${encodeURIComponent(qSearch)}&company=${encodeURIComponent(comp)}`);
       if (res.ok) {
         let data = await res.json();
         if (punct) {

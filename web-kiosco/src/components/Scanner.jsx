@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Webcam from 'react-webcam';
 import * as faceapi from '@vladmandic/face-api';
 import '../App.css';
+import { API_URL } from '../config';
 
 // Estados de la máquina de detección de vida (Liveness por Giro de Cabeza)
 const STATE_CALIBRATING = 0;      // Calibra la posición central de la cara
@@ -12,7 +13,7 @@ const STATE_VERIFIED = 3;          // Liveness confirmado, ejecuta escaneo láse
 export default function Scanner({ onNavigate }) {
   // Configuración de API
   const [apiUrl, setApiUrl] = useState(() => {
-    return localStorage.getItem('kiosco_api_url') || 'http://localhost:3000';
+    return localStorage.getItem('kiosco_api_url') || API_URL || window.location.origin;
   });
 
   // Estados de IA, Cámara y Liveness
@@ -239,7 +240,7 @@ export default function Scanner({ onNavigate }) {
       if (response.ok && data.success) {
         setFeedback({
           success: true,
-          title: data.tipo === 'ENTRADA' ? '¡Bienvenido!' : '¡Buen viaje!',
+          title: data.tipo === 'ENTRADA' ? '¡Bienvenido!' : '¡Turno Finalizado!',
           message: data.message
         });
       } else {

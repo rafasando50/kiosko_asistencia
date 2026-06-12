@@ -369,6 +369,9 @@
   .gradient-text {
     font-size: 2.8rem;
   }
+  .module-card {
+    justify-content: center;
+  }
 }
 
 @media (max-width: 425px) {
@@ -386,6 +389,7 @@
     padding: 1.25rem !important;
     gap: 1rem;
     border-radius: 20px;
+    justify-content: flex-start;
   }
   .icon-box {
     width: 50px;
