@@ -404,6 +404,61 @@ app.get('/api/companies.php', (req, res) => {
 
 // GET /api/daily.php
 app.get('/api/daily.php', (req, res) => {
+    const mode = req.query.mode || '';
+    if (mode === 'dashboard') {
+        const sqlTodayCount = `
+            SELECT COUNT(DISTINCT empleado_id) AS today_count 
+            FROM asistencias 
+            WHERE DATE(fecha_hora) = CURDATE() AND tipo = 'ENTRADA'
+        `;
+        const sqlRecent = `
+            SELECT 
+                MIN(a.id) AS id,
+                a.empleado_id,
+                emp.nombre AS full_name,
+                empr.nombre AS company,
+                MIN(CASE WHEN a.tipo = 'ENTRADA' THEN a.fecha_hora END) AS entrada,
+                MAX(CASE WHEN a.tipo = 'SALIDA' THEN a.fecha_hora END) AS salida
+            FROM asistencias a
+            JOIN empleados emp ON a.empleado_id = emp.id
+            JOIN empresas empr ON emp.empresa_id = empr.id
+            WHERE DATE(a.fecha_hora) = CURDATE()
+            GROUP BY a.empleado_id, emp.nombre, empr.nombre 
+            ORDER BY entrada DESC
+            LIMIT 5
+        `;
+        db.query(sqlTodayCount, (err, todayRows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            const today_count = todayRows[0] ? todayRows[0].today_count : 0;
+
+            db.query(sqlRecent, (err2, recentRows) => {
+                if (err2) return res.status(500).json({ error: err2.message });
+
+                const recent = recentRows.map(row => {
+                    let puntualidad = 'A Tiempo';
+                    if (row.entrada) {
+                        const entradaDate = new Date(row.entrada);
+                        const hours = entradaDate.getHours();
+                        const mins = hours * 60 + entradaDate.getMinutes();
+                        if (mins > (8 * 60 + 16)) puntualidad = 'Falta';
+                        else if (mins > (8 * 60 + 6)) puntualidad = 'Retardo';
+                    }
+                    return {
+                        ...row,
+                        puntualidad
+                    };
+                });
+
+                res.json({
+                    today_count,
+                    week_delays: 0,
+                    recent
+                });
+            });
+        });
+        return;
+    }
+
     const search = req.query.search || '';
     const company = req.query.company || '';
 
